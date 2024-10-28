@@ -1,7 +1,7 @@
 ## Getting Started
 Clone the repository locally:
 ```
-git clone "URL"
+git clone git@github.com:winstonwumbo/ist-402-vr-warehouse.git
 ```
 
 Run the following comamnd to download all dependencies:
