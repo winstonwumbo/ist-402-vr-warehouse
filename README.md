@@ -12,3 +12,4 @@ Run the following command to start a localhost session for development:
 ```
 npx vite
 ```
+New 3D assets should be placed in the `/public/` directory. They are accessible in JavaScript with the root path `./filename.glb` or just `filename.glb`.
