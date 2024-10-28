@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 
@@ -12,8 +11,10 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
+// Camera controls
 const controls = new OrbitControls(camera, renderer.domElement)
 
+// Messing with lights
 const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
 scene.add(ambientLight);
 
@@ -26,12 +27,13 @@ const pointLight = new THREE.PointLight(0xffffff, 1, 100); // White light with i
 pointLight.position.set(0, 10, 0);
 scene.add(pointLight);
 
-// Optional: Adjust shadow properties
+// Adjust shadow properties
 directionalLight.shadow.mapSize.width = 512; // Default is 512
 directionalLight.shadow.mapSize.height = 512;
 directionalLight.shadow.camera.near = 0.5; // Default
 directionalLight.shadow.camera.far = 50; // Default
 
+// Skybox
 const sky = new Sky();
 sky.scale.setScalar( 300 );
 
@@ -44,8 +46,9 @@ sky.material.uniforms.sunPosition.value = sunPosition;
 
 scene.add( sky );
 
+// Warehouse Model
 const loader = new GLTFLoader();
-loader.load('./public/abandoned_warehouse.glb', async function ( gltf ) {
+loader.load('./abandoned_warehouse.glb', async function ( gltf ) {
 
     const model = gltf.scene;
 
@@ -59,6 +62,7 @@ loader.load('./public/abandoned_warehouse.glb', async function ( gltf ) {
 
 } );
 
+// Ground plane
 const pgeometry = new THREE.PlaneGeometry( 50, 50 );
 let tex = new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/4/4c/Grass_Texture.png")
 tex.anisotropy = 32
@@ -73,6 +77,7 @@ plane.position.set(0, 0, 0)
 plane.rotation.set(Math.PI/-2, 0, 0)
 scene.add( plane );
 
+// Default cube
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
