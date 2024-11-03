@@ -46,8 +46,9 @@ sky.material.uniforms.sunPosition.value = sunPosition;
 
 scene.add( sky );
 
-// Warehouse Model
 const loader = new GLTFLoader();
+
+//add warehouse
 loader.load('./abandoned_warehouse.glb', async function ( gltf ) {
 
     const model = gltf.scene;
@@ -60,6 +61,143 @@ loader.load('./abandoned_warehouse.glb', async function ( gltf ) {
 
     scene.add( model );
 
+} );
+
+//add shelving
+loader.load('./old_rusty_shelving_unit.glb', async function ( gltf ) {
+    const model = gltf.scene;
+
+    model.position.set(6, 0.05, 5)
+    await renderer.compileAsync( model, camera, scene );
+    scene.add(model);
+
+    const model2 =  model.clone()
+    model2.position.set(6, 0.05, 2.5)
+    await renderer.compileAsync(model2, camera, scene);
+    scene.add(model2);
+
+    const model3 =  model.clone()
+    model3.position.set(6, 0.05, 0)
+    await renderer.compileAsync(model3, camera, scene);
+    scene.add(model3);
+
+    const model4 =  model.clone()
+    model4.position.set(6, 0.05, -2.5)
+    await renderer.compileAsync(model4, camera, scene);
+    scene.add(model4);
+
+    const model5 =  model.clone()
+    model5.position.set(6, 0.05, -5)
+    await renderer.compileAsync(model5, camera, scene);
+    scene.add(model5);
+
+    const model7 =  model.clone()
+    model7.position.set(6, 0.05, -7.5)
+    await renderer.compileAsync(model7, camera, scene);
+    scene.add(model7);
+
+    const model8 =  model.clone()
+    model8.position.set(6, 0.05, -10)
+    await renderer.compileAsync(model8, camera, scene);
+    scene.add(model8);
+} );
+
+loader.load('./wooden_box.glb', async function ( gltf ) {
+    const model = gltf.scene;
+    model.scale.set(0.005, 0.005, 0.005)
+    model.position.set(6.2, 1.6, 4.5)
+    await renderer.compileAsync(model, camera, scene);
+    scene.add(model);
+
+    const model2 = model.clone();
+    model2.scale.set(0.005, 0.005, 0.005)
+    model2.position.set(6.2, 1.6, 5.5)
+    await renderer.compileAsync(model2, camera, scene);
+    scene.add(model2);
+
+    const model3 = model.clone();
+    model3.scale.set(0.005, 0.005, 0.005)
+    model3.position.set(5.2, 1.6, 4.5)
+    await renderer.compileAsync(model3, camera, scene);
+    scene.add(model3);
+
+    const model4 = model.clone();
+    model4.scale.set(0.005, 0.005, 0.005)
+    model4.position.set(5.2, 1.6, 5.5)
+    await renderer.compileAsync(model4, camera, scene);
+    scene.add(model4);
+
+    const model5 = model.clone();
+    model5.scale.set(0.005, 0.005, 0.005)
+    model5.position.set(6.2, 1.6, -0.5)
+    await renderer.compileAsync(model5, camera, scene);
+    scene.add(model5);
+
+    const model6 = model.clone();
+    model6.scale.set(0.005, 0.005, 0.005)
+    model6.position.set(6.2, 1.6, 0.5)
+    await renderer.compileAsync(model6, camera, scene);
+    scene.add(model6);
+
+    const model7 = model.clone();
+    model7.scale.set(0.005, 0.005, 0.005)
+    model7.position.set(5.2, 1.6, -0.5)
+    await renderer.compileAsync(model7, camera, scene);
+    scene.add(model7);
+
+    const model8 = model.clone();
+    model8.scale.set(0.005, 0.005, 0.005)
+    model8.position.set(5.2, 1.6, 0.5)
+    await renderer.compileAsync(model8, camera, scene);
+    scene.add(model8);
+
+    const model9 = model.clone();
+    model9.scale.set(0.005, 0.005, 0.005)
+    model9.position.set(6.2, 1.6, -5.5)
+    await renderer.compileAsync(model9, camera, scene);
+    scene.add(model9);
+
+    const model10 = model.clone();
+    model10.scale.set(0.005, 0.005, 0.005)
+    model10.position.set(6.2, 1.6, -4.5)
+    await renderer.compileAsync(model10, camera, scene);
+    scene.add(model10);
+
+    const model11 = model.clone();
+    model11.scale.set(0.005, 0.005, 0.005)
+    model11.position.set(5.2, 1.6, -5.5)
+    await renderer.compileAsync(model11, camera, scene);
+    scene.add(model11);
+
+    const model12 = model.clone();
+    model12.scale.set(0.005, 0.005, 0.005)
+    model12.position.set(5.2, 1.6, -4.5)
+    await renderer.compileAsync(model12, camera, scene);
+    scene.add(model12);
+
+    const model13 = model.clone();
+    model13.scale.set(0.005, 0.005, 0.005)
+    model13.position.set(6.2, 1.6, -10.5)
+    await renderer.compileAsync(model13, camera, scene);
+    scene.add(model13);
+
+    const model14 = model.clone();
+    model14.scale.set(0.005, 0.005, 0.005)
+    model14.position.set(6.2, 1.6, -9.5)
+    await renderer.compileAsync(model14, camera, scene);
+    scene.add(model14);
+
+    const model15 = model.clone();
+    model15.scale.set(0.005, 0.005, 0.005)
+    model15.position.set(5.2, 1.6, -10.5)
+    await renderer.compileAsync(model15, camera, scene);
+    scene.add(model15);
+
+    const model16 = model.clone();
+    model16.scale.set(0.005, 0.005, 0.005)
+    model16.position.set(5.2, 1.6, -9.5)
+    await renderer.compileAsync(model16, camera, scene);
+    scene.add(model16);
 } );
 
 // Ground plane
