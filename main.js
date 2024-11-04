@@ -63,6 +63,22 @@ loader.load('./abandoned_warehouse.glb', async function ( gltf ) {
 
 } );
 
+// add spaceshuttle easter
+loader.load('./discovery_space_shuttle.glb', async function ( gltf ) {
+
+    const shuttle = gltf.scene;
+    // shuttle.scale.set(22, 22, 20)
+
+
+    shuttle.position.set(32, 6, 0)
+
+    // wait until the model can be added to the scene without blocking due to shader compilation
+
+    await renderer.compileAsync( shuttle, camera, scene );
+
+    scene.add( shuttle );
+
+} )
 //add shelving
 loader.load('./old_rusty_shelving_unit.glb', async function ( gltf ) {
     const model = gltf.scene;
@@ -201,7 +217,7 @@ loader.load('./wooden_box.glb', async function ( gltf ) {
 } );
 
 // Ground plane
-const pgeometry = new THREE.PlaneGeometry( 50, 50 );
+const pgeometry = new THREE.PlaneGeometry( 1000, 1000 );
 let tex = new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/4/4c/Grass_Texture.png")
 tex.anisotropy = 32
 tex.repeat.set(100, 100)
@@ -219,6 +235,8 @@ scene.add( plane );
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
+cube.position.set(0, 4, 8)
+cube.scale.set(0.5, 0.5, 0.5)
 scene.add( cube );
 
 camera.position.z = 5;
