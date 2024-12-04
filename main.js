@@ -18,10 +18,18 @@ let canJump = false;
 
 const objects = [];
 
+//object interaction
+const interactableObj = [];
+const ray = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
 let raycaster;
 let prevTime = performance.now();
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
+
+var locked = false;
+var lockedObj = [];
 
 // Messing with lights
 const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
@@ -133,96 +141,113 @@ loader.load('./wooden_box.glb', async function ( gltf ) {
     model.position.set(6.2, 1.6, 4.5)
     await renderer.compileAsync(model, camera, scene);
     scene.add(model);
+    interactableObj.push(model);
 
     const model2 = model.clone();
     model2.scale.set(0.005, 0.005, 0.005)
     model2.position.set(6.2, 1.6, 5.5)
     await renderer.compileAsync(model2, camera, scene);
     scene.add(model2);
+    interactableObj.push(model2);
 
     const model3 = model.clone();
     model3.scale.set(0.005, 0.005, 0.005)
     model3.position.set(5.2, 1.6, 4.5)
     await renderer.compileAsync(model3, camera, scene);
     scene.add(model3);
+    interactableObj.push(model3);
 
     const model4 = model.clone();
     model4.scale.set(0.005, 0.005, 0.005)
     model4.position.set(5.2, 1.6, 5.5)
     await renderer.compileAsync(model4, camera, scene);
     scene.add(model4);
+    interactableObj.push(model4);
 
     const model5 = model.clone();
     model5.scale.set(0.005, 0.005, 0.005)
     model5.position.set(6.2, 1.6, -0.5)
     await renderer.compileAsync(model5, camera, scene);
     scene.add(model5);
+    interactableObj.push(model5);
 
     const model6 = model.clone();
     model6.scale.set(0.005, 0.005, 0.005)
     model6.position.set(6.2, 1.6, 0.5)
     await renderer.compileAsync(model6, camera, scene);
     scene.add(model6);
+    interactableObj.push(model6);
 
     const model7 = model.clone();
     model7.scale.set(0.005, 0.005, 0.005)
     model7.position.set(5.2, 1.6, -0.5)
     await renderer.compileAsync(model7, camera, scene);
     scene.add(model7);
+    interactableObj.push(model7);
 
     const model8 = model.clone();
     model8.scale.set(0.005, 0.005, 0.005)
     model8.position.set(5.2, 1.6, 0.5)
     await renderer.compileAsync(model8, camera, scene);
     scene.add(model8);
+    interactableObj.push(model8);
 
     const model9 = model.clone();
     model9.scale.set(0.005, 0.005, 0.005)
     model9.position.set(6.2, 1.6, -5.5)
     await renderer.compileAsync(model9, camera, scene);
     scene.add(model9);
+    interactableObj.push(model9);
 
     const model10 = model.clone();
     model10.scale.set(0.005, 0.005, 0.005)
     model10.position.set(6.2, 1.6, -4.5)
     await renderer.compileAsync(model10, camera, scene);
     scene.add(model10);
+    interactableObj.push(model10);
 
     const model11 = model.clone();
     model11.scale.set(0.005, 0.005, 0.005)
     model11.position.set(5.2, 1.6, -5.5)
     await renderer.compileAsync(model11, camera, scene);
     scene.add(model11);
+    interactableObj.push(model11);
 
     const model12 = model.clone();
     model12.scale.set(0.005, 0.005, 0.005)
     model12.position.set(5.2, 1.6, -4.5)
     await renderer.compileAsync(model12, camera, scene);
     scene.add(model12);
+    interactableObj.push(model12);
 
     const model13 = model.clone();
     model13.scale.set(0.005, 0.005, 0.005)
     model13.position.set(6.2, 1.6, -10.5)
     await renderer.compileAsync(model13, camera, scene);
     scene.add(model13);
+    interactableObj.push(model13);
 
     const model14 = model.clone();
     model14.scale.set(0.005, 0.005, 0.005)
     model14.position.set(6.2, 1.6, -9.5)
     await renderer.compileAsync(model14, camera, scene);
     scene.add(model14);
+    interactableObj.push(model14);
 
     const model15 = model.clone();
     model15.scale.set(0.005, 0.005, 0.005)
     model15.position.set(5.2, 1.6, -10.5)
     await renderer.compileAsync(model15, camera, scene);
     scene.add(model15);
+    model15.position.set(0, 0, 0)
+    interactableObj.push(model15);
 
     const model16 = model.clone();
     model16.scale.set(0.005, 0.005, 0.005)
     model16.position.set(5.2, 1.6, -9.5)
     await renderer.compileAsync(model16, camera, scene);
     scene.add(model16);
+    interactableObj.push(model16);
 } );
 
 // Default cube
@@ -327,8 +352,38 @@ function init() {
 
     };
 
+    const onMouseDown = function (event) {
+        event.preventDefault();
+
+        pointer.x = (event.clientX / window.innerWidth) * 2 - 1; //calculate the normalized device coordinate for the x value
+        pointer.y = -(event.clientY / window.innerHeight) * 2 + 1; //calculate the normalized device coordinate for the y value
+
+        ray.setFromCamera(pointer, camera); //establish a raycaster using the pointer and camera as a reference
+
+        for (let i = 0; i < interactableObj.length; i++) //iterate through all the possible interactable objects
+        {
+            const intersects = ray.intersectObject(interactableObj[i], true); //check for intersection
+
+            if (intersects.length > 0) //ray.intersectObject returns an array, if the length is greater than 0 an intersection occured
+            {
+                lockObj(interactableObj[i]); //lock obj to camera
+                break; //break the loop so as not to lock more than one object at a time (ex. objects behind/in front one another)
+            }
+        }
+    }
+
+    const onMouseUp = function (event) {
+        event.preventDefault();
+
+        //reset variables
+        locked = false; 
+        lockedObj = [];
+    }
+
     document.addEventListener( 'keydown', onKeyDown );
     document.addEventListener( 'keyup', onKeyUp );
+    document.addEventListener('mousedown', onMouseDown); //mouse is pressed down, perform function onMouseDown
+    document.addEventListener('mouseup', onMouseUp); //mouse is released from being pressed down, perform function onMouseUp
 
     raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
@@ -402,6 +457,12 @@ function onWindowResize() {
 function animate() {
     const time = performance.now();
 
+    //if an object is locked to the camera make sure its position is continuously updated
+    if (locked == true)
+    {
+        lockedObj[0].position.set(camera.position.x + 0.5, camera.position.y, camera.position.z);
+    }
+
     if ( controls.isLocked === true ) {
 
         raycaster.ray.origin.copy( controls.object.position );
@@ -455,4 +516,13 @@ function animate() {
 
 	renderer.render( scene, camera );
 
+}
+
+function lockObj(obj)
+{
+    obj.position.set(camera.position.x + 0.5, camera.position.y, camera.position.z); //set initial position
+
+    //lock object to camera and make sure that its value is stored for updating purposes
+    locked = true;
+    lockedObj.push(obj);
 }
