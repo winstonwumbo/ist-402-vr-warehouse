@@ -2,17 +2,26 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Sky } from 'three/addons/objects/Sky.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setAnimationLoop( animate );
-document.body.appendChild( renderer.domElement );
+let camera, scene, renderer, controls;
+scene = new THREE.Scene();
+camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 // Camera controls
-const controls = new OrbitControls(camera, renderer.domElement)
+// Movement states (keyboard)
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+let canJump = false;
+
+const objects = [];
+
+let raycaster;
+let prevTime = performance.now();
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
 
 // Messing with lights
 const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
@@ -53,7 +62,8 @@ loader.load('./abandoned_warehouse.glb', async function ( gltf ) {
 
     const model = gltf.scene;
 
-    model.position.set(0, 0.05, 0)
+    model.scale.set(1.75, 1.75, 1.75)
+    model.position.set(-5, 0.05, 0)
 
     // wait until the model can be added to the scene without blocking due to shader compilation
 
@@ -67,10 +77,9 @@ loader.load('./abandoned_warehouse.glb', async function ( gltf ) {
 loader.load('./discovery_space_shuttle.glb', async function ( gltf ) {
 
     const shuttle = gltf.scene;
-    // shuttle.scale.set(22, 22, 20)
+    shuttle.scale.set(1.5, 1.5, 1.5)
 
-
-    shuttle.position.set(32, 6, 0)
+    shuttle.position.set(32, 10, 0)
 
     // wait until the model can be added to the scene without blocking due to shader compilation
 
@@ -216,32 +225,230 @@ loader.load('./wooden_box.glb', async function ( gltf ) {
     scene.add(model16);
 } );
 
-// Ground plane
-const pgeometry = new THREE.PlaneGeometry( 1000, 1000 );
-let tex = new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/4/4c/Grass_Texture.png")
-tex.anisotropy = 32
-tex.repeat.set(100, 100)
-tex.wrapT = THREE.RepeatWrapping
-tex.wrapS = THREE.RepeatWrapping
-const pmaterial = new THREE.MeshLambertMaterial({
-    map: tex
-});
-const plane = new THREE.Mesh( pgeometry, pmaterial );
-plane.position.set(0, 0, 0)
-plane.rotation.set(Math.PI/-2, 0, 0)
-scene.add( plane );
-
 // Default cube
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
-cube.position.set(0, 4, 8)
+cube.position.set(0, 7, 14)
 cube.scale.set(0.5, 0.5, 0.5)
 scene.add( cube );
 
-camera.position.z = 5;
+init()
+
+function init() {
+
+    camera.position.y = 2;
+
+    controls = new PointerLockControls( camera, document.body );
+
+    const blocker = document.getElementById( 'blocker' );
+    const instructions = document.getElementById( 'instructions' );
+
+    instructions.addEventListener( 'click', function () {
+
+        controls.lock();
+
+    } );
+
+    controls.addEventListener( 'lock', function () {
+
+        instructions.style.display = 'none';
+        blocker.style.display = 'none';
+
+    } );
+
+    controls.addEventListener( 'unlock', function () {
+
+        blocker.style.display = 'block';
+        instructions.style.display = '';
+
+    } );
+
+    scene.add( controls.object );
+
+    const onKeyDown = function ( event ) {
+
+        switch ( event.code ) {
+
+            case 'ArrowUp':
+            case 'KeyW':
+                moveForward = true;
+                break;
+
+            case 'ArrowLeft':
+            case 'KeyA':
+                moveLeft = true;
+                break;
+
+            case 'ArrowDown':
+            case 'KeyS':
+                moveBackward = true;
+                break;
+
+            case 'ArrowRight':
+            case 'KeyD':
+                moveRight = true;
+                break;
+
+            case 'Space':
+                if ( canJump === true ) velocity.y += 50;
+                canJump = false;
+                break;
+
+        }
+
+    };
+
+    const onKeyUp = function ( event ) {
+
+        switch ( event.code ) {
+
+            case 'ArrowUp':
+            case 'KeyW':
+                moveForward = false;
+                break;
+
+            case 'ArrowLeft':
+            case 'KeyA':
+                moveLeft = false;
+                break;
+
+            case 'ArrowDown':
+            case 'KeyS':
+                moveBackward = false;
+                break;
+
+            case 'ArrowRight':
+            case 'KeyD':
+                moveRight = false;
+                break;
+
+        }
+
+    };
+
+    document.addEventListener( 'keydown', onKeyDown );
+    document.addEventListener( 'keyup', onKeyUp );
+
+    raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
+
+    // floor
+
+    let floorGeometry = new THREE.PlaneGeometry( 1000, 1000 );
+    floorGeometry.rotateX( - Math.PI / 2 );
+
+    let tex = new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/4/4c/Grass_Texture.png")
+    tex.anisotropy = 32
+    tex.repeat.set(100, 100)
+    tex.wrapT = THREE.RepeatWrapping
+    tex.wrapS = THREE.RepeatWrapping
+    const pmaterial = new THREE.MeshLambertMaterial({
+        map: tex
+    });
+    const floor = new THREE.Mesh( floorGeometry, pmaterial );
+    scene.add( floor );
+
+    // // objects
+
+    // const boxGeometry = new THREE.BoxGeometry( 20, 20, 20 ).toNonIndexed();
+
+    // position = boxGeometry.attributes.position;
+    // const colorsBox = [];
+
+    // for ( let i = 0, l = position.count; i < l; i ++ ) {
+
+    //     color.setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75, THREE.SRGBColorSpace );
+    //     colorsBox.push( color.r, color.g, color.b );
+
+    // }
+
+    // boxGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colorsBox, 3 ) );
+
+    // for ( let i = 0; i < 500; i ++ ) {
+
+    //     const boxMaterial = new THREE.MeshPhongMaterial( { specular: 0xffffff, flatShading: true, vertexColors: true } );
+    //     boxMaterial.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75, THREE.SRGBColorSpace );
+
+    //     const box = new THREE.Mesh( boxGeometry, boxMaterial );
+    //     box.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
+    //     box.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
+    //     box.position.z = Math.floor( Math.random() * 20 - 10 ) * 20;
+
+    //     scene.add( box );
+    //     objects.push( box );
+
+    // }
+
+    //
+
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setAnimationLoop( animate );
+    document.body.appendChild( renderer.domElement );
+
+    window.addEventListener( 'resize', onWindowResize );
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+}
 
 function animate() {
+    const time = performance.now();
+
+    if ( controls.isLocked === true ) {
+
+        raycaster.ray.origin.copy( controls.object.position );
+        raycaster.ray.origin.y -= 10;
+
+        const intersections = raycaster.intersectObjects( objects, false );
+
+        const onObject = intersections.length > 0;
+
+        const delta = ( time - prevTime ) / 1000;
+
+        velocity.x -= velocity.x * 10.0 * delta;
+        velocity.z -= velocity.z * 10.0 * delta;
+
+        velocity.y -= 9.8 * 15.0 * delta; // 100.0 = mass
+
+        direction.z = Number( moveForward ) - Number( moveBackward );
+        direction.x = Number( moveRight ) - Number( moveLeft );
+        direction.normalize(); // this ensures consistent movements in all directions
+
+        if ( moveForward || moveBackward ) velocity.z -= direction.z * 40.0 * delta;
+        if ( moveLeft || moveRight ) velocity.x -= direction.x * 40.0 * delta;
+
+        if ( onObject === true ) {
+
+            velocity.y = Math.max( 0, velocity.y );
+            canJump = true;
+
+        }
+
+        controls.moveRight( - velocity.x * delta );
+        controls.moveForward( - velocity.z * delta );
+
+        controls.object.position.y += ( velocity.y * delta ); // new behavior
+
+        if ( controls.object.position.y < 2 ) {
+
+            velocity.y = 0;
+            controls.object.position.y = 2;
+
+            canJump = true;
+
+        }
+
+    }
+
+    prevTime = time;
 
 	cube.rotation.x += 0.01;
 	cube.rotation.y += 0.01;
